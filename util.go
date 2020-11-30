@@ -74,7 +74,7 @@ const (
 	NormalPing
 )
 
-const url string = "https://apple.freecdn.workers.dev/105/media/us/iphone-11-pro/2019/3bd902e4-0752-4ac1-95f8-6225c32aec6d/films/product/iphone-11-pro-product-tpl-cc-us-2019_1280x720h.mp4"
+var url string
 
 var downloadTestTime time.Duration
 
@@ -89,9 +89,25 @@ var failTime int
 
 type CloudflareIPDataSet []CloudflareIPData
 
-func initipEndWith() {
+func initRandSeed() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func randipEndWith() {
 	ipEndWith = uint8(rand.Intn(254) + 1)
+}
+
+func ipPadding(ip string) string {
+	var ipLength int
+	var ipPrint string
+	ipPrint = ip
+	ipLength = len(ipPrint)
+	if ipLength < 15 {
+		for i := 0; i <= 15-ipLength; i++ {
+			ipPrint += " "
+		}
+	}
+	return ipPrint
 }
 
 func handleProgressGenerator(pb *pb.ProgressBar) func(e progressEvent) {
