@@ -64,8 +64,6 @@ func convertToString(data []CloudflareIPData) [][]string {
 var pingTime int
 var pingRoutine int
 
-var ipEndWith uint8 = 0
-
 type progressEvent int
 
 const (
@@ -87,14 +85,29 @@ const tcpConnectTimeout = time.Second * 1
 
 var failTime int
 
+// 平均延迟排序（丢包另算）
 type CloudflareIPDataSet []CloudflareIPData
+
+// 下载速度排序
+type CloudflareIPDataSetD []CloudflareIPData
 
 func initRandSeed() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func randipEndWith() {
-	ipEndWith = uint8(rand.Intn(254) + 1)
+func randipEndWith(num int) uint8 {
+	return uint8(rand.Intn(num))
+}
+
+func GetRandomString() string {
+	str := "0123456789abcdef"
+	bytes := []byte(str)
+	result := []byte{}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < 4; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
 }
 
 func ipPadding(ip string) string {
@@ -135,5 +148,17 @@ func (cfs CloudflareIPDataSet) Less(i, j int) bool {
 }
 
 func (cfs CloudflareIPDataSet) Swap(i, j int) {
+	cfs[i], cfs[j] = cfs[j], cfs[i]
+}
+
+func (cfs CloudflareIPDataSetD) Len() int {
+	return len(cfs)
+}
+
+func (cfs CloudflareIPDataSetD) Less(i, j int) bool {
+	return cfs[i].downloadSpeed > cfs[j].downloadSpeed
+}
+
+func (cfs CloudflareIPDataSetD) Swap(i, j int) {
 	cfs[i], cfs[j] = cfs[j], cfs[i]
 }
